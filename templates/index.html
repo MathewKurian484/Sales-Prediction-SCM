@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>BigMart Product Predictions</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 text-gray-800">
+  <div class="container mx-auto p-6">
+    <h1 class="text-4xl font-bold mb-6">Sales Predictions</h1>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      {% for product in products %}
+        <a href="{{ url_for('product_detail', id=product['_id']) }}" class="bg-white p-6 rounded-lg shadow hover:shadow-xl transition">
+          <div class="flex items-center mb-4">
+            <!-- Hardcoded icons for realistic supermarket items -->
+            <i class="fas fa-{{ ['apple-alt', 'bread-slice', 'carrot', 'cheese', 'drumstick-bite', 'fish', 'ice-cream', 'lemon', 'pepper-hot', 'pizza-slice'][loop.index0 % 10] }} text-2xl text-gray-500 mr-4"></i>
+            <h2 class="text-xl font-semibold">{{ product['Item_Identifier'] }}</h2>
+          </div>
+          <p class="text-sm text-gray-600">Outlet: {{ product['Outlet_Identifier'] }}</p>
+        </a>
+      {% endfor %}
+    </div>
+  </div>
+</body>
+</html>

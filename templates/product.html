@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>{{ product['Item_Identifier'] }}</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    function openDayInput(dayIndex, date, predictedDemand) {
+      // Show the modal
+      document.getElementById('dayModal').classList.remove('hidden');
+
+      // Set the modal content
+      document.getElementById('modalDate').innerText = date;
+      document.getElementById('modalPredictedDemand').innerText = predictedDemand;
+      document.getElementById('modalDayIndex').value = dayIndex;
+      document.getElementById('modalStockUnits').value = '';
+      document.getElementById('modalRecommendation').innerText = 'Enter units to see recommendations.';
+    }
+
+    function calculateModalStock() {
+      const dayIndex = document.getElementById('modalDayIndex').value;
+      const units = parseInt(document.getElementById('modalStockUnits').value) || 0;
+      const predictedDemand = parseInt(document.getElementById('modalPredictedDemand').innerText);
+
+      // Calculate stock adjustment recommendation
+      const adjustment = predictedDemand - units;
+      let recommendation = "";
+      if (adjustment > 0) {
+        recommendation = `Add ${adjustment} units.`;
+      } else if (adjustment < 0) {
+        recommendation = `Reduce ${Math.abs(adjustment)} units.`;
+      } else {
+        recommendation = "No adjustment needed.";
+      }
+
+      // Update the recommendation text
+      document.getElementById('modalRecommendation').innerText = recommendation;
+    }
+
+    function closeDayInput() {
+      // Hide the modal
+      document.getElementById('dayModal').classList.add('hidden');
+    }
+  </script>
+</head>
+<body class="bg-gray-50 text-gray-800">
+  <div class="container mx-auto p-6">
+    <a href="{{ url_for('index') }}" class="text-blue-600 hover:underline mb-4 inline-block">← Back</a>
+    <div class="bg-white p-8 rounded-lg shadow-md">
+      <h1 class="text-3xl font-bold">{{ product['Item_Identifier'] }}</h1>
+      <p class="mt-2 text-lg">Outlet: <strong>{{ product['Outlet_Identifier'] }}</strong></p>
+      <p class="mt-4 text-xl">Predicted Price Per Unit: <span class="text-green-600 font-semibold">{{ "%.2f"|format(product['Item_Outlet_Sales']) }}</span></p>
+    </div>
+
+    <!-- Calendar for the next 10 days -->
+    <div class="bg-white p-8 rounded-lg shadow-md mt-6">
+      <h2 class="text-2xl font-bold mb-4">Predictions for the Next 10 Days</h2>
+      <div class="grid grid-cols-5 gap-4">
+        {% for day in range(10) %}
+        <div class="bg-gray-100 p-4 rounded-lg shadow cursor-pointer hover:bg-gray-200" onclick="openDayInput({{ day }}, '{{ (now + timedelta(days=day)).strftime('%Y-%m-%d') }}', {{ predicted_demand + (day * 5) }})">
+          <p class="text-center font-bold">{{ (now + timedelta(days=day)).strftime('%b %d') }}</p>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    <!-- Modal for entering stock units -->
+    <div id="dayModal" class="fixed inset-0 bg-gray-800 bg-opacity-50 flex items-center justify-center hidden">
+      <div class="bg-white p-6 rounded-lg shadow-lg w-96">
+        <h3 class="text-xl font-bold mb-4">Stock Adjustment for <span id="modalDate"></span></h3>
+        <!-- Hidden element but still functional for JavaScript -->
+        <p class="hidden">Predicted Demand: <span id="modalPredictedDemand" class="text-green-600 font-semibold"></span></p>
+        <div class="mt-4">
+          <label for="modalStockUnits" class="block text-lg font-medium">Enter Units:</label>
+          <input type="number" id="modalStockUnits" class="border border-gray-300 rounded-lg p-2 mt-2 w-full" placeholder="Enter units" oninput="calculateModalStock()">
+        </div>
+        <p class="mt-4 text-lg text-blue-600 font-semibold" id="modalRecommendation">Enter units to see recommendations.</p>
+        <input type="hidden" id="modalDayIndex">
+        <div class="mt-6 flex justify-end">
+          <button class="bg-gray-300 text-gray-800 px-4 py-2 rounded-lg mr-2" onclick="closeDayInput()">Cancel</button>
+          <button class="bg-blue-600 text-white px-4 py-2 rounded-lg" onclick="closeDayInput()">Ok</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
